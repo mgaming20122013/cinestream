@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStream | Free Web Media Portal</title>
+    <style>
+        /* Modern Dark Theme Variables & Styles */
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: #1e293b;
+            --accent: #38bdf8;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* App Header and Search Engine Control Box */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0 2rem 0;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background-color: var(--bg-card);
+            color: #fff;
+            outline: none;
+        }
+
+        .search-box button {
+            padding: 0 1.5rem;
+            background-color: var(--accent);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Global Video Stream Player Container */
+        .player-wrapper {
+            background: #000;
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #334155;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        .player-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Movie Display Grid Cards */
+        h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .movie-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+        }
+
+        .movie-card img {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            background-color: #111;
+        }
+
+        .movie-info {
+            padding: 12px;
+        }
+
+        .movie-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .movie-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Application Top Navigation Bar -->
+        <header>
+            <div class="logo">CineStream.</div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search for movies...">
+                <button id="search-btn">Search</button>
+            </div>
+        </header>
+
+        <!-- Interactive Dynamic Embedded Media Viewer -->
+        <h2>Now Playing Engine</h2>
+        <div class="player-wrapper">
+            <!-- Defaults to Fight Club (TMDb ID: 550) on page boot up -->
+            <iframe id="video-player" src="https://vidsrc.xyz" allowfullscreen></iframe>
+        </div>
+
+        <!-- Dynamic Content Database Container -->
+        <h2 id="grid-title">Popular Releases</h2>
+        <div class="movie-grid" id="movie-grid">
+            <!-- JavaScript dynamically injects movie grid elements here -->
+        </div>
+    </div>
+
+    <script>
+        // Your TMDb API Key is pre-configured below:
+        const API_KEY = '1b0135caact4a2fa2298af94f529d4f1'; 
+        
+        const TMDB_BASE_URL = 'https://themoviedb.org';
+        const IMAGE_BASE_URL = 'https://tmdb.org';
+        const VIDEO_EMBED_BASE = 'https://vidsrc.xyz';
+
+        const movieGrid = document.getElementById('movie-grid');
+        const videoPlayer = document.getElementById('video-player');
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const gridTitle = document.getElementById('grid-title');
+
+        // Fetch and display trending standard movies from library API
+        async function fetchPopularMovies() {
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`);
+                const data = await response.json();
+                renderMovies(data.results);
+            } catch (error) {
+                console.error("Error connecting to TMDb Data source:", error);
+            }
+        }
+
+        // Render movie array directly to DOM view elements
+        function renderMovies(movies) {
+            movieGrid.innerHTML = '';
+            movies.forEach(movie => {
+                if(!movie.poster_path) return; // Skip media files missing artwork cards
+                
+                const card = document.createElement('div');
+                card.classList.add('movie-card');
+                card.innerHTML = `
+                    <img src="${IMAGE_BASE_URL}${movie.poster_path}" alt="${movie.title}">
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title}</div>
+                        <div class="movie-meta">
+                            <span>${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</span>
+                            <span style="color: #eab308;">★ ${movie.vote_average.toFixed(1)}</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Add event listener to swap out player engine core embed video string
+                card.addEventListener('click', () => {
+                    videoPlayer.src = `${VIDEO_EMBED_BASE}${movie.id}`;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                
+                movieGrid.appendChild(card);
+            });
+        }
+
+        // Query Search Parameter Interface Controller
+        async function searchMovies() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+            
+            try {
+                gridTitle.innerText = `Search Results for: "${query}"`;
+                const response = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US`);
+                const data = await response.json();
+                renderMovies(data.results);
+            } catch (error) {
+                console.error("Error processing text query item:", error);
+            }
+        }
+
+        searchBtn.addEventListener('click', searchMovies);
+        searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchMovies(); });
+
+        // Initialize default view catalog routine execution
+        fetchPopularMovies();
+    </script>
+</body>
+</html>
+
