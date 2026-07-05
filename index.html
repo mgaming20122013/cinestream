@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CineStream | Free Web Media Portal</title>
     <style>
-        /* Modern Dark Theme Variables & Styles */
         :root {
             --bg-dark: #0b0f19;
             --bg-card: #1e293b;
@@ -32,7 +31,6 @@
             margin: 0 auto;
         }
 
-        /* App Header and Search Engine Control Box */
         header {
             display: flex;
             justify-content: space-between;
@@ -74,7 +72,6 @@
             cursor: pointer;
         }
 
-        /* Global Video Stream Player Container */
         .player-wrapper {
             background: #000;
             width: 100%;
@@ -92,7 +89,6 @@
             border: none;
         }
 
-        /* Movie Display Grid Cards */
         h2 {
             margin-bottom: 1.5rem;
             font-size: 1.5rem;
@@ -149,7 +145,6 @@
 <body>
 
     <div class="container">
-        <!-- Application Top Navigation Bar -->
         <header>
             <div class="logo">CineStream.</div>
             <div class="search-box">
@@ -158,27 +153,21 @@
             </div>
         </header>
 
-        <!-- Interactive Dynamic Embedded Media Viewer -->
         <h2>Now Playing Engine</h2>
         <div class="player-wrapper">
-            <!-- Defaults to Fight Club (TMDb ID: 550) on page boot up -->
-            <iframe id="video-player" src="https://vidsrc.xyz" allowfullscreen></iframe>
+            <iframe id="video-player" src="https://vidsrc.pm" allowfullscreen></iframe>
         </div>
 
-        <!-- Dynamic Content Database Container -->
         <h2 id="grid-title">Popular Releases</h2>
-        <div class="movie-grid" id="movie-grid">
-            <!-- JavaScript dynamically injects movie grid elements here -->
-        </div>
+        <div class="movie-grid" id="movie-grid"></div>
     </div>
 
     <script>
-        // Your TMDb API Key is pre-configured below:
-        const API_KEY = '1b0135caact4a2fa2298af94f529d4f1'; 
-        
+        // Configured with your exact corrected API Key:
+        const API_KEY = '1b0135caacf4a2fa2298af94f529d4f1'; 
         const TMDB_BASE_URL = 'https://themoviedb.org';
         const IMAGE_BASE_URL = 'https://tmdb.org';
-        const VIDEO_EMBED_BASE = 'https://vidsrc.xyz';
+        const VIDEO_EMBED_BASE = 'https://vidsrc.pm';
 
         const movieGrid = document.getElementById('movie-grid');
         const videoPlayer = document.getElementById('video-player');
@@ -186,22 +175,20 @@
         const searchBtn = document.getElementById('search-btn');
         const gridTitle = document.getElementById('grid-title');
 
-        // Fetch and display trending standard movies from library API
         async function fetchPopularMovies() {
             try {
                 const response = await fetch(`${TMDB_BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`);
                 const data = await response.json();
                 renderMovies(data.results);
             } catch (error) {
-                console.error("Error connecting to TMDb Data source:", error);
+                console.error("Error connecting to TMDb:", error);
             }
         }
 
-        // Render movie array directly to DOM view elements
         function renderMovies(movies) {
             movieGrid.innerHTML = '';
             movies.forEach(movie => {
-                if(!movie.poster_path) return; // Skip media files missing artwork cards
+                if(!movie.poster_path) return; 
                 
                 const card = document.createElement('div');
                 card.classList.add('movie-card');
@@ -210,13 +197,12 @@
                     <div class="movie-info">
                         <div class="movie-title">${movie.title}</div>
                         <div class="movie-meta">
-                            <span>${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</span>
+                            <span>${movie.release_date ? movie.release_date.split('-') : 'N/A'}</span>
                             <span style="color: #eab308;">★ ${movie.vote_average.toFixed(1)}</span>
                         </div>
                     </div>
                 `;
                 
-                // Add event listener to swap out player engine core embed video string
                 card.addEventListener('click', () => {
                     videoPlayer.src = `${VIDEO_EMBED_BASE}${movie.id}`;
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -226,7 +212,6 @@
             });
         }
 
-        // Query Search Parameter Interface Controller
         async function searchMovies() {
             const query = searchInput.value.trim();
             if (!query) return;
@@ -237,16 +222,14 @@
                 const data = await response.json();
                 renderMovies(data.results);
             } catch (error) {
-                console.error("Error processing text query item:", error);
+                console.error("Error processing query:", error);
             }
         }
 
         searchBtn.addEventListener('click', searchMovies);
         searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchMovies(); });
 
-        // Initialize default view catalog routine execution
         fetchPopularMovies();
     </script>
 </body>
 </html>
-
